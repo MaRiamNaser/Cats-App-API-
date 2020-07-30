@@ -1,0 +1,110 @@
+/*
+ * Copyright (C) 2008 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.google.gson;
+
+import com.google.gson.stream.JsonReader;
+import java.lang.reflect.Type;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.google.gson.internal.$Gson$Preconditions;
+import com.google.gson.internal.Excluder;
+import com.google.gson.internal.bind.TreeTypeAdapter;
+import com.google.gson.internal.bind.TypeAdapters;
+import com.google.gson.reflect.TypeToken;
+
+import static com.google.gson.Gson.DEFAULT_COMPLEX_MAP_KEYS;
+import static com.google.gson.Gson.DEFAULT_ESCAPE_HTML;
+import static com.google.gson.Gson.DEFAULT_JSON_NON_EXECUTABLE;
+import static com.google.gson.Gson.DEFAULT_LENIENT;
+import static com.google.gson.Gson.DEFAULT_PRETTY_PRINT;
+import static com.google.gson.Gson.DEFAULT_SERIALIZE_NULLS;
+import static com.google.gson.Gson.DEFAULT_SPECIALIZE_FLOAT_VALUES;
+
+/**
+ * <p>Use this builder to construct a {@link Gson} instance when you need to set configuration
+ * options other than the default. For {@link Gson} with default configuration, it is simpler to
+ * use {@code new Gson()}. {@code GsonBuilder} is best used by creating it, and then invoking its
+ * various configuration methods, and finally calling create.</p>
+ *
+ * <p>The following is an example shows how to use the {@code GsonBuilder} to construct a Gson
+ * instance:
+ *
+ * <pre>
+ * Gson gson = new GsonBuilder()
+ *     .registerTypeAdapter(Id.class, new IdTypeAdapter())
+ *     .enableComplexMapKeySerialization()
+ *     .serializeNulls()
+ *     .setDateFormat(DateFormat.LONG)
+ *     .setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
+ *     .setPrettyPrinting()
+ *     .setVersion(1.0)
+ *     .create();
+ * </pre></p>
+ *
+ * <p>NOTES:
+ * <ul>
+ * <li> the order of invocation of configuration methods does not matter.</li>
+ * <li> The default serialization of {@link Date} and its subclasses in Gson does
+ *  not contain time-zone information. So, if you are using date/time instances,
+ *  use {@code GsonBuilder} and its {@code setDateFormat} methods.</li>
+ *  </ul>
+ * </p>
+ *
+ * @author Inderjeet Singh
+ * @author Joel Leitch
+ * @author Jesse Wilson
+ */
+public final class GsonBuilder {
+  private Excluder excluder = Excluder.DEFAULT;
+  private LongSerializationPolicy longSerializationPolicy = LongSerializationPolicy.DEFAULT;
+  private FieldNamingStrategy fieldNamingPolicy = FieldNamingPolicy.IDENTITY;
+  private final Map<Type, InstanceCreator<?>> instanceCreators
+      = new HashMap<Type, InstanceCreator<?>>();
+  private final List<TypeAdapterFactory> factories = new ArrayList<TypeAdapterFactory>();
+  /** tree-style hierarchy factories. These come after factories for backwards compatibility. */
+  private final List<TypeAdapterFactory> hierarchyFactories = new ArrayList<TypeAdapterFactory>();
+  private boolean serializeNulls = DEFAULT_SERIALIZE_NULLS;
+  private String datePattern;
+  private int dateStyle = DateFormat.DEFAULT;
+  private int timeStyle = DateFormat.DEFAULT;
+  private boolean complexMapKeySerialization = DEFAULT_COMPLEX_MAP_KEYS;
+  private boolean serializeSpecialFloatingPointValues = DEFAULT_SPECIALIZE_FLOAT_VALUES;
+  private boolean escapeHtmlChars = DEFAULT_ESCAPE_HTML;
+  private boolean prettyPrinting = DEFAULT_PRETTY_PRINT;
+  private boolean generateNonExecutableJson = DEFAULT_JSON_NON_EXECUTABLE;
+  private boolean lenient = DEFAULT_LENIENT;
+
+  /**
+   * Creates a GsonBuilder instance that can be used to build Gson with various configuration
+   * settings. GsonBuilder follows the builder pattern, and it is typically used by first
+   * invoking various configuration methods to set desired options, and finally calling
+   * {@link #create()}.
+   */
+  public GsonBuilder() {
+  }
+
+  /**
+   * Configures Gson to enable versioning support.
+   *
+   * @param ignoreVersionsA
